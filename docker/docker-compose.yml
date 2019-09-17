@@ -1,0 +1,26 @@
+---
+version: '3'
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.3.2
+    container_name: logstash
+    environment:
+      - XPACK_MONITORING_ENABLED=false
+    volumes:
+      - config:/usr/share/logstash/config
+    networks: ['stack']
+    ports: ['9600:9600']
+
+  api-logstash:
+    image: api-logstash
+    container_name: api-logstash
+    environment: 
+      - LOGSTASH_CONFIG_PATH=/usr/share/logstash/config
+    volumes: 
+      - config:/usr/share/logstash/config
+    networks: ['stack']
+    ports: ['8080:8080']
+    depends_on: ['logstash']
+volumes:
+  config:
+networks: {stack: {}}

@@ -1,0 +1,484 @@
+---
+swagger: "2.0"
+info:
+  description: "This is a logstash api to configure it in cloud environments as k8s,\
+    \  where is difficult send config files to logstash. Logstash native configuration\
+    \ is based in config files. If you need update config , you must replace config\
+    \ files. This api needs share config volume with logstash to run properly. You\
+    \ can find out more about Logstash configuration at [http://elastic.co](https://www.elastic.co/guide/en/logstash/current/config-settin-files.html)."
+  version: "2.0.0"
+  title: "Logstash config api"
+  termsOfService: "https://opensource.org/ToS"
+  contact:
+    email: "fsmetar@gmail.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8080"
+basePath: "/v2"
+tags:
+- name: "pipeline"
+  description: "Everything about Logstash pipelines config"
+  externalDocs:
+    description: "Find out more"
+    url: "https://www.elastic.co"
+- name: "patterns"
+  description: "Everything about Logstash patterns config"
+  externalDocs:
+    description: "Find out more"
+    url: "https://www.elastic.co"
+- name: "health"
+  description: "Everything about api health"
+schemes:
+- "http"
+paths:
+  /health:
+    get:
+      tags:
+      - "health"
+      operationId: "healthGET"
+      parameters: []
+      responses:
+        200:
+          description: "Logstash api up & running"
+          schema:
+            $ref: "#/definitions/Health"
+        500:
+          description: "Logstash api KO"
+      x-swagger-router-controller: "Health"
+  /pipeline:
+    post:
+      tags:
+      - "pipeline"
+      summary: "Add a new global Logstash pipelines configuration"
+      description: "Replace current global logstash pipelines config by a new configuration"
+      operationId: "addPipelines"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "config"
+        in: "formData"
+        description: "Zip file with global logstash pipeline config"
+        required: true
+        type: "file"
+      responses:
+        200:
+          description: "Logstash configuration ends OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash configuration process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+    put:
+      tags:
+      - "pipeline"
+      summary: "Update pipeline configuration"
+      description: "Update current logstash pipeline configuration without delete\
+        \ previos configuration. Zip file structure must be relative to `/usr/share/logstash/config/pipeline` folder. \
+        \ This configration NOT update file `pipelines.yml`"
+      operationId: "updatePipeline"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "config"
+        in: "formData"
+        description: "Zip file with update files of pipelines logstash config"
+        required: true
+        type: "file"
+      responses:
+        200:
+          description: "Logstash configuration ends OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash configuration process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+    delete:
+      tags:
+      - "pipeline"
+      summary: "Init logstash pipeline config"
+      description: "Restore init logstash pipelines config with one dummy pipeline"
+      operationId: "deletePipeline"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Logstash configuration ends OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash configuration process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+  /pipeline/pipelinesConfigFile:
+    get:
+      tags:
+      - "pipeline"
+      summary: "returns pipelines.yml content"
+      description: "returns content of current `pipelines.yml` config file"
+      operationId: "pipelinesConfigFile"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Get pipelines.yml file"
+          schema:
+            $ref: "#/definitions/FileObject"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error ocurred retreieving pipelines config file"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+    put:
+      tags:
+      - "pipeline"
+      summary: "update pipelines.yml file"
+      description: "update content of current `pipelines.yml` config file"
+      operationId: "putPipelinesConfigFile"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "config"
+        in: "formData"
+        description: "plain `pipelines.yml` file with logstash pipelines configuraction"
+        required: true
+        type: "file"
+      responses:
+        200:
+          description: "Updated Logstash pipelines.yml config file"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash pipelines configuration process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+  /pipeline/getConfigFile:
+    get:
+      tags:
+      - "pipeline"
+      summary: "returns content of especific logstash config file"
+      description: "returns content of especific logstash config file relative to\
+        \ `/usr/share/logstash/config/pipeline` path"
+      operationId: "getConfigFile"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "file"
+        description: "file to return content"
+        required: true
+        type: string
+      responses:
+        200:
+          description: "Get especific logstash config file"
+          schema:
+            $ref: "#/definitions/FileObject"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error ocurred retreieving logstash config file (For example if file does not exist)"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+  /pipeline/listConfig:
+    get:
+      tags:
+      - "pipeline"
+      summary: "returns full content list of current logstash config files "
+      description: "returns full content list of current logstash config files"
+      operationId: "pipelineslistConfig"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Get list config files"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/File"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error ocurred retreieving list of config files"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+  /pipeline/deleteConfigFile:
+    delete:
+      tags:
+      - "pipeline"
+      summary: "Delete config files relative to /usr/share/logstash/config/pipeline"
+      description: "Delete Logstash config files relative to main pipelines configuration folder"
+      operationId: "deleteConfigFile"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "pattern"
+        description: "pattern files to delete"
+        required: true
+        type: string
+      responses:
+        200:
+          description: "File(s) deleted"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error ocurred during delete operation"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Pipeline"
+  /patterns:
+    post:
+      tags:
+      - "patterns"
+      summary: "Add a new patterns config files"
+      description: "Replace current global patterns by a new configuration provided.\
+        \ **All current patterns files will be deleted**"
+      operationId: "addPatterns"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "config"
+        in: "formData"
+        description: "Zip file with global logstash patterns config"
+        required: true
+        type: "file"
+      responses:
+        200:
+          description: "Logstash patterns configuration ends OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash patterns configuration process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Patterns"
+    put:
+      tags:
+      - "patterns"
+      summary: "Update patterns config files"
+      description: "update/replace current patterns files.if new files added , old\
+        \ files **DOES NOT** will be deleted"
+      operationId: "updatePatterns"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "config"
+        in: "formData"
+        description: "Zip file with patterns files structure relative to /usr/share/logstash/config/patterns"
+        required: true
+        type: "file"
+      responses:
+        200:
+          description: "Logstash patterns configuration ends OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash patterns configuration process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Patterns"
+    delete:
+      tags:
+      - "patterns"
+      summary: "Delete all logstash patterns config files"
+      description: "**Delete** all logstash patterns config files"
+      operationId: "deletePatterns"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Logstash patterns deleted OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash patterns delete process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Patterns"
+  /patterns/getConfigFile:
+    get:
+      tags:
+      - "patterns"
+      summary: "returns content of especific logstash patterns file"
+      description: "returns content of especific logstash patterns file relative to\
+        \ `/usr/share/logstash/config/patterns` path"
+      operationId: "getPatternsFile"
+      consumes:
+      - "application/json"
+      produces:
+      - "text/plain"
+      parameters:
+      - in: "body"
+        name: "file"
+        description: "file to return content"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        200:
+          description: "Get especific logstash patterns file"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error ocurred retreieving logstash patterns file"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Patterns"
+  /patterns/listConfig:
+    get:
+      tags:
+      - "patterns"
+      summary: "returns full list of patterns files "
+      description: "returns full content list of current logstash patterns files"
+      operationId: "patternslistConfig"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Get list patterns files"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/FileObject"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error ocurred retreieving list of patterns files"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Patterns"
+  /patterns/deleteFile:
+    delete:
+      tags:
+      - "patterns"
+      summary: "Delete specific patterns file"
+      description: "**Delete** specific patterns file relative to path `/usr/share/logstash/config/patterns."
+      operationId: "deletePatternsFile"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "file"
+        description: "patterns file to delete content"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        200:
+          description: "Logstash patterns file deleted OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash patterns file delete process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Patterns"
+  /patterns/deleteFolder:
+    delete:
+      tags:
+      - "patterns"
+      summary: "Delete specific patterns folder"
+      description: "**Delete** specific patterns folder relative to path `/usr/share/logstash/config/patterns."
+      operationId: "deletePatternsFolder"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "folder"
+        description: "patterns folder to delete content"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        200:
+          description: "Logstash patterns folder deleted OK"
+        400:
+          description: "Invalid credentials"
+        500:
+          description: "Error occurred during logstash patterns folder delete process"
+      security:
+      - BasicAuth: []
+      x-swagger-router-controller: "Patterns"
+securityDefinitions:
+  BasicAuth:
+    type: "basic"
+definitions:
+  File:
+    type: "object"
+    properties:
+      path:
+        type: "string"
+        format: "string"
+      owner:
+        type: "string"
+        format: "string"
+      group:
+        type: "string"
+        format: "string"
+      permissions:
+        type: "string"
+        format: "string"
+  FileObject: 
+    type: "object"
+    properties:
+      path:
+        type: "string"
+        format: "string"
+      owner:
+        type: "string"
+        format: "string"
+      group:
+        type: "string"
+        format: "string"
+      permissions:
+        type: "string"
+        format: "string"
+      content:
+        type: "string"
+        format: "string"
+    example:
+      owner: 1000
+      path: /usr/share/logstash/config/pipeline/pileline.conf
+      permissions: "0664"
+      group: 1000
+      content: "This is a content of file"
+  Health:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+        format: "string"
+    example:
+      status: "OK"
+externalDocs:
+  description: "Find out more about logstash"
+  url: "ttps://www.elastic.co"

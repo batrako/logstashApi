@@ -1,0 +1,25 @@
+{
+  "name": "logstash-config-api",
+  "version": "2.0.0",
+  "description": "This is a logstash api to configure it in cloud environments as k8s,  where is difficult send config files to logstash. Logstash native configuration is based in config files. If you need update config , you must replace config files. This api needs share config volume with logstash to run properly. You can find out more about Logstash configuration at [http://elastic.co](https://www.elastic.co/guide/en/logstash/current/config-settin-files.html).",
+  "main": "index.js",
+  "scripts": {
+    "prestart": "npm install",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "swagger"
+  ],
+  "license": "Unlicense",
+  "private": true,
+  "dependencies": {
+    "connect": "^3.2.0",
+    "fs-extra": "^8.1.0",
+    "js-yaml": "^3.3.0",
+    "nodemon": "^1.19.2",
+    "rimraf": "^3.0.0",
+    "swagger-tools": "^0.10.4",
+    "unzipper": "^0.10.3",
+    "winston": "^3.2.1"
+  }
+}
