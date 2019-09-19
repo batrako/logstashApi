@@ -12,7 +12,7 @@ services:
     ports: ['9600:9600']
 
   api-logstash:
-    image: api-logstash
+    image: batrako/logstash-api
     container_name: api-logstash
     environment: 
       - LOGSTASH_CONFIG_PATH=/usr/share/logstash/config
